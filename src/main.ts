@@ -8,7 +8,6 @@ async function run(): Promise<void> {
     const key = Buffer.from(
       `${core.getInput('kobitonLogin')}:${core.getInput('kobitonKey')}`
     ).toString('base64')
-    core.debug(`Uploading app version with app id ${core.getInput('appId')}`)
     const body = {
       filename: core.getInput('fileName'),
       appId: core.getInput('appId')
@@ -23,7 +22,13 @@ async function run(): Promise<void> {
       headers,
       json: body
     }
+
+    core.info(`Uploading to ${baseUri}`)
+    core.info(`Uploading app version with filename ${core.getInput('fileName')} and app id ${core.getInput('appId')} and artifactPath ${core.getInput('artifactPath')}`)
     const {appPath, url: uploadUrl} = await request.post(options)
+    core.info(`Response variables appPath ${appPath} and uploadUrl ${uploadUrl}`)
+
+    core.info('About to put file')
     await request.put({
       uri: uploadUrl,
       headers: {
@@ -34,14 +39,15 @@ async function run(): Promise<void> {
     })
     core.info('File uploaded')
 
-    const createVersionResp = await request.post({
+    core.info('About to post version')
+    const {appId, versionId} = await request.post({
       uri: `${baseUri}/apps`,
       headers,
       json: {appPath, filename: core.getInput('fileName')}
     })
+    core.info(`Kobiton notified about new version - appId ${appId} and versionId ${versionId}`)
 
-    core.info('Kobiton notified about new version')
-    core.setOutput('versionId', createVersionResp.versionId)
+    core.setOutput('versionId', versionId)
   } catch (error) {
     core.setFailed(JSON.stringify(error))
   }
