@@ -4839,9 +4839,8 @@ function run() {
         try {
             const baseUri = 'https://api.kobiton.com/v1';
             const key = Buffer.from(`${core.getInput('kobitonLogin')}:${core.getInput('kobitonKey')}`).toString('base64');
-            core.debug(`Uploading app version with app id ${core.getInput('appId')}`);
             const body = {
-                filename: 'newVersion.apk',
+                filename: core.getInput('fileName'),
                 appId: core.getInput('appId')
             };
             const headers = {
@@ -4854,7 +4853,11 @@ function run() {
                 headers,
                 json: body
             };
+            core.info(`Uploading to ${baseUri}`);
+            core.info(`Uploading app version with filename ${core.getInput('fileName')} and app id ${core.getInput('appId')} and artifactPath ${core.getInput('artifactPath')}`);
             const { appPath, url: uploadUrl } = yield request.post(options);
+            core.info(`Response variables appPath ${appPath} and uploadUrl ${uploadUrl}`);
+            core.info('About to put file');
             yield request.put({
                 uri: uploadUrl,
                 headers: {
@@ -4864,13 +4867,14 @@ function run() {
                 body: yield fs_1.promises.readFile(core.getInput('artifactPath'))
             });
             core.info('File uploaded');
-            const createVersionResp = yield request.post({
+            core.info('About to post version');
+            const { appId, versionId } = yield request.post({
                 uri: `${baseUri}/apps`,
                 headers,
-                json: { appPath }
+                json: { appPath, filename: core.getInput('fileName') }
             });
-            core.info('Kobiton notified about new version');
-            core.setOutput('versionId', createVersionResp.versionId);
+            core.info(`Kobiton notified about new version - appId ${appId} and versionId ${versionId}`);
+            core.setOutput('versionId', versionId);
         }
         catch (error) {
             core.setFailed(JSON.stringify(error));
@@ -17126,7 +17130,7 @@ exports.getState = getState;
 /* 477 */
 /***/ (function(module) {
 
-module.exports = {"_args":[["tough-cookie@2.4.3","/home/jp/git/upload-to-kobiton"]],"_development":true,"_from":"tough-cookie@2.4.3","_id":"tough-cookie@2.4.3","_inBundle":false,"_integrity":"sha512-Q5srk/4vDM54WJsJio3XNn6K2sCG+CQ8G5Wz6bZhRZoAe/+TxjWB/GlFAnYEbkYVlON9FMk/fE3h2RLpPXo4lQ==","_location":"/request/tough-cookie","_phantomChildren":{},"_requested":{"type":"version","registry":true,"raw":"tough-cookie@2.4.3","name":"tough-cookie","escapedName":"tough-cookie","rawSpec":"2.4.3","saveSpec":null,"fetchSpec":"2.4.3"},"_requiredBy":["/request"],"_resolved":"https://registry.npmjs.org/tough-cookie/-/tough-cookie-2.4.3.tgz","_spec":"2.4.3","_where":"/home/jp/git/upload-to-kobiton","author":{"name":"Jeremy Stashewsky","email":"jstash@gmail.com"},"bugs":{"url":"https://github.com/salesforce/tough-cookie/issues"},"contributors":[{"name":"Alexander Savin"},{"name":"Ian Livingstone"},{"name":"Ivan Nikulin"},{"name":"Lalit Kapoor"},{"name":"Sam Thompson"},{"name":"Sebastian Mayr"}],"dependencies":{"psl":"^1.1.24","punycode":"^1.4.1"},"description":"RFC6265 Cookies and Cookie Jar for node.js","devDependencies":{"async":"^1.4.2","nyc":"^11.6.0","string.prototype.repeat":"^0.2.0","vows":"^0.8.1"},"engines":{"node":">=0.8"},"files":["lib"],"homepage":"https://github.com/salesforce/tough-cookie","keywords":["HTTP","cookie","cookies","set-cookie","cookiejar","jar","RFC6265","RFC2965"],"license":"BSD-3-Clause","main":"./lib/cookie","name":"tough-cookie","repository":{"type":"git","url":"git://github.com/salesforce/tough-cookie.git"},"scripts":{"cover":"nyc --reporter=lcov --reporter=html vows test/*_test.js","test":"vows test/*_test.js"},"version":"2.4.3"};
+module.exports = {"author":{"name":"Jeremy Stashewsky","email":"jstash@gmail.com","website":"https://github.com/stash"},"contributors":[{"name":"Alexander Savin","website":"https://github.com/apsavin"},{"name":"Ian Livingstone","website":"https://github.com/ianlivingstone"},{"name":"Ivan Nikulin","website":"https://github.com/inikulin"},{"name":"Lalit Kapoor","website":"https://github.com/lalitkapoor"},{"name":"Sam Thompson","website":"https://github.com/sambthompson"},{"name":"Sebastian Mayr","website":"https://github.com/Sebmaster"}],"license":"BSD-3-Clause","name":"tough-cookie","description":"RFC6265 Cookies and Cookie Jar for node.js","keywords":["HTTP","cookie","cookies","set-cookie","cookiejar","jar","RFC6265","RFC2965"],"version":"2.4.3","homepage":"https://github.com/salesforce/tough-cookie","repository":{"type":"git","url":"git://github.com/salesforce/tough-cookie.git"},"bugs":{"url":"https://github.com/salesforce/tough-cookie/issues"},"main":"./lib/cookie","files":["lib"],"scripts":{"test":"vows test/*_test.js","cover":"nyc --reporter=lcov --reporter=html vows test/*_test.js"},"engines":{"node":">=0.8"},"devDependencies":{"async":"^1.4.2","nyc":"^11.6.0","string.prototype.repeat":"^0.2.0","vows":"^0.8.1"},"dependencies":{"psl":"^1.1.24","punycode":"^1.4.1"}};
 
 /***/ }),
 /* 478 */,
